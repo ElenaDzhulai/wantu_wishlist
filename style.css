@@ -1,0 +1,385 @@
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+html,
+body,
+ul,
+p {
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  min-height: 100vh;
+}
+
+body {
+  font-family: 'Urbanist', sans-serif;
+  font-size: 14px;
+  background: #faf8f6;
+  color: #12495C;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Pacifico', cursive;
+  font-size: 40px;
+  color: #f4f2ee;
+
+}
+
+.container {
+  display: flex;
+}
+
+h1 {
+  font-size: 48px;
+  font-weight: 800;
+}
+
+h2 {
+  color: #fff;
+}
+
+h3 {
+  letter-spacing: 0.5px;
+}
+
+input,
+button {
+  font-size: 14px;
+}
+
+input[type="text"],
+.eventForm input,
+main li input {
+  padding: 8px;
+  margin: 8px 0;
+  width: 100%;
+  height: 40px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  white-space: nowrap;
+  background-color: #69915d;
+  color: white;
+  border: none;
+  height: 40px;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #5a7f50;
+}
+
+a {
+  color: #69915d;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+
+.sidebar {
+  width: 320px;
+  min-height: 100vh;
+  background: #12495C;
+  padding: 24px 0;
+  padding-left: 0;
+  box-sizing: border-box;
+  border-right: 1px solid #ddd;
+}
+
+.sidebar li,
+.sidebarEventForm {
+  padding-left: 24px;
+}
+
+.sidebar h1 {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.sidebar h2 {
+  padding: 24px 24px 24px 32px;
+}
+
+.sidebarEventForm {
+  display: grid;
+  padding: 32px 24px 0;
+}
+
+.eventWithControls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px 8px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  color: #fff;
+}
+
+.eventWithControls span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+  font-weight: 600;
+}
+
+.itemButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.eventForm button {
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar li {
+  transition: background .3s ease;
+}
+
+.sidebar li:hover {
+  background: rgba(215, 235, 208, 0.05);
+}
+
+.sidebar li.active {
+  border-radius: 4px;
+  position: relative;
+}
+
+.sidebar li.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  background: #f07a3d;
+}
+
+.eventForm {
+  padding: 3px 24px 2px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wishes_controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 640px;
+  padding: 24px 0 24px 0;
+}
+
+main {
+  flex: 1;
+  box-sizing: border-box;
+  padding: 24px 0 24px 96px;
+}
+
+main ul {
+  background: #fff;
+  max-width: 640px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0 24px 32px 24px;
+  list-style: none;
+}
+
+main li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 0 24px 0;
+  gap: 8px;
+}
+
+main li:not(:last-child) {
+  border-bottom: 1px dashed #ecdec7;
+}
+
+.wishLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+
+.wishListData {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 640px;
+}
+
+.savePDF {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #f07a3d;
+  transition: background-color 0.2s ease;
+}
+
+.savePDF:hover {
+  background-color: #e96a26;
+}
+
+.savePDF .material-icons {
+  transition: transform 0.2s ease;
+}
+
+.savePDF:hover .material-icons {
+  transform: translateY(2px);
+}
+
+.wish_checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  position: relative;
+  margin-right: 16px;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  background-color: #fff;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.wish_checkbox:hover {
+  background-color: #fafafa;
+}
+
+.wish_checkbox:checked {
+  background-color: #69915d;
+  border-color: #69915d;
+}
+
+.wish_checkbox:checked::after {
+  content: "✔";
+  color: white;
+  font-size: 16px;
+  position: absolute;
+  left: 6px;
+  top: 0;
+}
+
+.done {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* for modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hidden {
+  display: none;
+}
+
+.modal_content {
+  padding: 24px;
+  max-width: 600px;
+  background-color: #fff;
+  border-radius: 10px;
+}
+
+.modal_buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.modal-buttons button {
+  padding: 8px 16px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+#confirmDelete {
+  background-color: #4caf50;
+  color: white;
+}
+
+#cancelDelete {
+  background-color: #ccc;
+}
+
+
+
+button i.material-icons {
+  font-size: 20px;
+  pointer-events: none;
+}
+
+.icon-button {
+  height: 40px;
+  width: 40px;
+  border-radius: 8px;
+  background-color: #69915d;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.icon-button:hover {
+  background-color: #5a7f50;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .eventWithControls .itemButtons {
+    opacity: 0;
+    transform: scale(0.95);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .eventWithControls:hover .itemButtons {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
