@@ -89,9 +89,9 @@ export const AppWantu = {
         }
     },
     deleteEvent: function () {
-        if (eventDelete && this.events[eventDelete]) {
-            delete this.events[eventDelete];
-            if (this.currentEvent === eventDelete) {
+        if (this.eventDelete && this.events[this.eventDelete]) {
+            delete this.events[this.eventDelete];
+            if (this.currentEvent === this.eventDelete) {
                 this.currentEvent = null;
             }
             this.saveToStorage();
@@ -156,11 +156,11 @@ export const AppWantu = {
         this.renderWishes();
     },
     showDeleteModal: function (eventName) {
-        eventDelete = eventName;
+        this.eventDelete = eventName;
         document.getElementById("confirmModal").classList.remove("hidden");
     },
     closeDeleteModal: function () {
-        eventDelete = null;
+        this.eventDelete = null;
         document.getElementById("confirmModal").classList.add("hidden");
     },
     addWish: function () {
