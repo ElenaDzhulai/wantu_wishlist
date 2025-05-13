@@ -194,18 +194,10 @@ ul {
   gap: 8px;
 }
 
-.wishes_controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 640px;
-  padding: 24px 0 24px 0;
-}
-
 main {
   flex: 1;
   box-sizing: border-box;
-  padding: 24px 0 24px 96px;
+  padding: 24px 24px 24px 96px;
 }
 
 main ul {
@@ -227,6 +219,14 @@ main li {
 
 main li:not(:last-child) {
   border-bottom: 1px dashed #ecdec7;
+}
+
+.wishes_controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 640px;
+  padding: 24px 0 24px 0;
 }
 
 .wishLabel {
@@ -446,43 +446,42 @@ button i.material-icons {
     }
   }
 
-}
+  #hamburger {
+    display: block;
+  }
 
-#hamburger {
-  display: block;
-}
+  h2 {
+    margin: 0;
+  }
 
-h2 {
-  margin: 0;
-}
+  .eventForm {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
 
-.eventForm {
-  padding-top: 8px;
-  padding-bottom: 8px;
-}
+  .sidebarEventForm {
+    padding-bottom: 24px;
+  }
 
-.sidebarEventForm {
-  padding-bottom: 24px;
-}
+  main {
+    padding: 24px;
+  }
 
-main {
-  padding: 24px;
-}
+  h1 {
+    margin: 0;
+  }
 
-h1 {
-  margin: 0;
-}
+  .wishes_controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
 
-.wishes_controls {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-}
+  .wishes_controls button {
+    width: 100%;
+  }
 
-.wishes_controls button {
-  width: 100%;
-}
-
-.modal_content {
-  width: 90%;
+  .modal_content {
+    width: 90%;
+  }
 }
