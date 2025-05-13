@@ -10,21 +10,28 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
   <script src="script.js" type="module" defer></script>
+  <script src="common.js" type="module" defer></script>
+
 </head>
 
 <body>
   <div class="container">
+
     <!-- Sidebar with categories -->
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="logo">Wantu</div>
+      <div id="hamburger">&#9776;</div>
 
-      <h2>Events</h2>
-      <ul id="eventList"></ul>
+      <div id="sideMenu">
+        <h2>Events</h2>
+        <ul id="eventList"></ul>
 
-      <div class="sidebarEventForm">
-        <input type="text" id="newEventInput" placeholder="Create an event">
-        <button id="addEvent">Add</button>
+        <div class="sidebarEventForm">
+          <input type="text" id="newEventInput" placeholder="Create an event">
+          <button id="addEvent">Add</button>
+        </div>
       </div>
+
     </aside>
 
     <!-- Wish list -->
