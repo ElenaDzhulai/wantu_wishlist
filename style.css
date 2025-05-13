@@ -31,7 +31,7 @@ body {
   justify-content: center;
   font-family: 'Pacifico', cursive;
   font-size: 40px;
-  color: #f4f2ee;
+  color: #fff;
 
 }
 
@@ -45,7 +45,7 @@ h1 {
 }
 
 h2 {
-  color: #fff;
+  color: #faf8f6;
 }
 
 h3 {
@@ -384,5 +384,49 @@ button i.material-icons {
   .eventWithControls:hover .itemButtons {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+  }
+
+  h2 {
+    margin: 0;
+  }
+
+  .eventForm {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  main {
+    padding: 24px;
+  }
+
+  h1 {
+    margin: 0;
+  }
+
+  .wishes_controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .wishes_controls button {
+    width: 100%;
+  }
+
+  .modal_content {
+    width: 90%;
   }
 }
