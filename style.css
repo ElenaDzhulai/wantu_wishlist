@@ -21,7 +21,7 @@ body {
 body {
   font-family: 'Urbanist', sans-serif;
   font-size: 14px;
-  background: #faf8f6;
+  background: #faf5f0;
   color: #12495C;
 }
 
@@ -448,6 +448,12 @@ button i.material-icons {
 
   #hamburger {
     display: block;
+  }
+
+  input[type="text"],
+  .eventForm input,
+  main li input {
+    font-size: 16px;
   }
 
   h2 {
