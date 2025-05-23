@@ -1,5 +1,6 @@
 export const AppWantu = {
   events: [],
+  wishes: [],
   currentEvent: null,
   eventDelete: null,
   dbClient: null,
@@ -64,6 +65,7 @@ export const AppWantu = {
       const span = document.createElement("span");
       span.textContent = event.title;
       liElement.className = event.id === this.currentEvent ? "active" : "";
+      liElement.setAttribute("data-eventid", event.id);
       liElement.setAttribute("data-eventid", event.id);
       eventWithControls.onclick = (e) => {
         if (
@@ -222,11 +224,20 @@ export const AppWantu = {
     document.getElementById("wishTitleInput").value = "";
     document.getElementById("wishLinkInput").value = "";
   },
-  toggleWish: function (index) {
-    this.events[this.currentEvent][index].done =
-      !this.events[this.currentEvent][index].done;
-    this.saveToStorage();
-    this.renderWishes();
+  toggleWish: async function (wishId) {
+    const wish = this.wishes.find((w) => w.id === wishId);
+    wish.done = !wish.done;
+
+    const { error } = await this.dbClient
+      .from("wishes")
+      .update({ done: wish.done })
+      .eq("id", wishId);
+
+    if (error) {
+      console.error(`[toggleWish] ${error}`);
+    } else {
+      this.renderWishes();
+    }
   },
   editWishForm: function (container, wish, index) {
     let inputTitle = document.createElement("input");
@@ -277,7 +288,7 @@ export const AppWantu = {
     this.saveToStorage();
     this.renderWishes();
   },
-  renderWishes: function () {
+  renderWishes: async function () {
     const title = document.getElementById("eventTitle");
     const list = document.getElementById("wishList");
 
@@ -292,17 +303,31 @@ export const AppWantu = {
     document.querySelector(".wishes_controls").style.display = "flex";
     document.querySelector(".savePDF").style.display = "flex";
 
-    if (this.events[this.currentEvent].length) {
+    const { data, error } = await this.dbClient
+      .from("wishes")
+      .select("*")
+      .eq("event_id", this.currentEvent);
+
+    if (error) {
+      console.error("[renderWishes] ", error);
+    }
+
+    this.wishes = data;
+
+    if (this.wishes.length) {
       list.style.display = "block";
     } else {
       list.style.display = "none";
     }
 
-    title.textContent = this.currentEvent;
+    title.textContent = this.events.filter(
+      (event) => event.id === this.currentEvent,
+    )[0].title;
     list.innerHTML = "";
 
-    this.events[this.currentEvent].forEach((wish, i) => {
+    this.wishes.forEach((wish) => {
       const li = document.createElement("li");
+      li.setAttribute("data-wishid", wish.id);
 
       const container = document.createElement("div");
       container.className = "wishLabel";
@@ -311,7 +336,7 @@ export const AppWantu = {
       checkbox.type = "checkbox";
       checkbox.checked = wish.done;
       checkbox.classList.add("wish_checkbox");
-      checkbox.onchange = () => this.toggleWish(i);
+      checkbox.onchange = () => this.toggleWish(wish.id);
       container.appendChild(checkbox);
 
       const titleElement = document.createElement(wish.link ? "a" : "span");
