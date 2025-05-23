@@ -1,14 +1,3 @@
-// TODO:
-
-// CURRENT_TASK: replace localStorage with supabase
-
-// 1. add "order" to events
-// 2. render sorted by "order" events
-// 3. generate "order" number by the largest "order" value
-// 4. make order value to be increased by default
-// 5. Fix alert on editEvent function
-// 6. Render events by order
-
 export const AppWantu = {
   events: [],
   currentEvent: null,
@@ -134,7 +123,11 @@ export const AppWantu = {
         input.value = "";
       }
     } else {
-      alert("Enter an event title");
+      if (!eventTitle) {
+        alert("Enter an event title");
+      } else {
+        alert(`Name "${eventTitle}" already in your events list.`);
+      }
     }
   },
   deleteEvent: async function () {
@@ -199,10 +192,9 @@ export const AppWantu = {
       return;
     }
 
-    // FIXME: not working
     // check if event with the same name already exists
     if (this.events.some((event) => event.title === newEvent.title)) {
-      alert(`Name "${newEvent}" already in your events list.`);
+      alert(`Name "${newEvent.title}" already in your events list.`);
       return;
     }
 
