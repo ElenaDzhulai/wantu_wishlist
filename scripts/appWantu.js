@@ -1,7 +1,7 @@
 export const AppWantu = {
   events: [],
   wishes: [],
-  currentEvent: null,
+  currentEventId: null,
   eventDelete: null,
   dbClient: null,
 
@@ -77,14 +77,14 @@ export const AppWantu = {
 
       const span = document.createElement("span");
       span.textContent = event.title;
-      liElement.className = event.id === this.currentEvent ? "active" : "";
+      liElement.className = event.id === this.currentEventId ? "active" : "";
       liElement.setAttribute("data-eventid", event.id);
       eventWithControls.onclick = (e) => {
         if (
           e.target.classList.contains("eventWithControls") ||
           e.target.tagName === "SPAN"
         ) {
-          this.currentEvent = event.id;
+          this.currentEventId = event.id;
           this.renderEvents();
           this.renderWishes();
         }
@@ -93,12 +93,12 @@ export const AppWantu = {
       const editButton = this.createIconButton(
         "edit",
         () => this.editEvent(event),
-        "Edit",
+        "Edit"
       );
       const deleteButton = this.createIconButton(
         "delete",
         () => this.showDeleteModal(event),
-        "Delete",
+        "Delete"
       );
 
       const buttonWrapper = document.createElement("div");
@@ -117,31 +117,31 @@ export const AppWantu = {
   addEvent: async function () {
     const input = document.getElementById("newEventInput");
     const eventTitle = input.value.trim();
-    if (
-      eventTitle &&
-      !this.events.some((event) => event.title === eventTitle)
-    ) {
-      const { data, error } = await this.dbClient
-        .from("events")
-        .insert({ title: eventTitle })
-        .select();
 
-      if (error) {
-        console.error("[addEvent] ", error);
-      } else {
-        const createdEvent = data[0];
-        this.currentEvent = createdEvent.id;
-        this.events.push(createdEvent);
-        this.renderEvents();
-        this.renderWishes();
-        input.value = "";
-      }
+    if (!eventTitle) {
+      alert("Enter an event title");
+      return;
+    }
+
+    if (this.events.some((event) => event.title === eventTitle)) {
+      alert(`Name "${eventTitle}" already in your events list.`);
+      return;
+    }
+
+    const { data, error } = await this.dbClient
+      .from("events")
+      .insert({ title: eventTitle })
+      .select();
+
+    if (error) {
+      console.error("[addEvent] ", error);
     } else {
-      if (!eventTitle) {
-        alert("Enter an event title");
-      } else {
-        alert(`Name "${eventTitle}" already in your events list.`);
-      }
+      const createdEvent = data[0];
+      this.currentEventId = createdEvent.id;
+      this.events.push(createdEvent);
+      this.renderEvents();
+      this.renderWishes();
+      input.value = "";
     }
   },
   deleteEvent: async function () {
@@ -156,8 +156,8 @@ export const AppWantu = {
       if (response.error) {
         console.error("[deleteEvent] ", response.error);
       } else {
-        if (this.currentEvent === this.eventDelete) {
-          this.currentEvent = null;
+        if (this.currentEventId === this.eventDelete) {
+          this.currentEventId = null;
         }
         // delete from local db
         this.events.splice(eventIndex, 1);
@@ -169,7 +169,7 @@ export const AppWantu = {
   },
   editEvent: function (event) {
     const eventContainer = document.querySelector(
-      `[data-eventid="${event.id}"]`,
+      `[data-eventid="${event.id}"]`
     );
     const eventForm = eventContainer.querySelector(".eventForm");
     const eventWithControls =
@@ -224,17 +224,25 @@ export const AppWantu = {
     this.eventDelete = null;
     document.getElementById("confirmModal").classList.add("hidden");
   },
-  addWish: function () {
+  addWish: async function () {
     const title = document.getElementById("wishTitleInput").value.trim();
     const link = document.getElementById("wishLinkInput").value.trim();
     if (!title) return alert("Please, enter a wish title");
 
-    this.events[this.currentEvent].push({ title, link, done: false });
-    this.saveToStorage();
-    this.renderWishes();
+    const { data, error } = await this.dbClient
+      .from("wishes")
+      .insert({ title, link, event_id: this.currentEventId })
+      .select();
 
-    document.getElementById("wishTitleInput").value = "";
-    document.getElementById("wishLinkInput").value = "";
+    if (error) {
+      console.error("[addWish] ", error);
+    } else {
+      const createdWish = data[0];
+      this.wishes.push(createdWish);
+      this.renderWishes();
+      document.getElementById("wishTitleInput").value = "";
+      document.getElementById("wishLinkInput").value = "";
+    }
   },
   toggleWish: async function (wishId) {
     const wish = this.wishes.find((w) => w.id === wishId);
@@ -317,7 +325,7 @@ export const AppWantu = {
     const title = document.getElementById("eventTitle");
     const list = document.getElementById("wishList");
 
-    if (!this.currentEvent) {
+    if (!this.currentEventId) {
       list.style.display = "none";
       title.textContent = "Select an event";
       document.querySelector(".wishes_controls").style.display = "none";
@@ -331,7 +339,7 @@ export const AppWantu = {
     const { data, error } = await this.dbClient
       .from("wishes")
       .select("*")
-      .eq("event_id", this.currentEvent);
+      .eq("event_id", this.currentEventId);
 
     if (error) {
       console.error("[renderWishes] ", error);
@@ -346,7 +354,7 @@ export const AppWantu = {
     }
 
     title.textContent = this.events.filter(
-      (event) => event.id === this.currentEvent,
+      (event) => event.id === this.currentEventId
     )[0].title;
     list.innerHTML = "";
 
@@ -382,12 +390,12 @@ export const AppWantu = {
       const editButton = this.createIconButton(
         "edit",
         () => this.editWish(wish.id),
-        "Edit",
+        "Edit"
       );
       const deleteButton = this.createIconButton(
         "delete",
         () => this.deleteWish(wish.id),
-        "Delete",
+        "Delete"
       );
 
       container.appendChild(editButton);
@@ -425,18 +433,18 @@ export const AppWantu = {
     const doc = new jsPDF();
 
     doc.setFontSize(14);
-    doc.text(`My Wish List: ${this.currentEvent}`, 10, 10);
+    doc.text(`My Wish List: ${this.currentEventId}`, 10, 10);
 
     let y = 20;
     if (
-      !this.events[this.currentEvent] ||
-      this.events[this.currentEvent].length === 0
+      !this.events[this.currentEventId] ||
+      this.events[this.currentEventId].length === 0
     ) {
       alert("This event has no wishes to export.");
       return;
     }
 
-    this.events[this.currentEvent].forEach((wish, index) => {
+    this.events[this.currentEventId].forEach((wish, index) => {
       let text = `${index + 1}. ${wish.title}`;
       if (wish.link) text += ` (${wish.link})`;
 
@@ -453,6 +461,6 @@ export const AppWantu = {
       y += 10;
     });
 
-    doc.save(`${this.currentEvent}_wish_list.pdf`);
+    doc.save(`${this.currentEventId}_wish_list.pdf`);
   },
 };
