@@ -146,7 +146,7 @@ export const AppWantu = {
   },
   deleteEvent: async function () {
     const eventIndex = this.events.findIndex((e) => e.id === this.eventDelete);
-    if (this.eventDelete && eventIndex > 0) {
+    if (this.eventDelete && eventIndex >= 0) {
       // delete from DB
       const response = await this.dbClient
         .from("events")
@@ -295,10 +295,23 @@ export const AppWantu = {
     itemButtons.style.display = "none";
     this.editWishForm(li, wishId);
   },
-  deleteWish: function (index) {
-    this.events[this.currentEvent].splice(index, 1);
-    this.saveToStorage();
-    this.renderWishes();
+  deleteWish: async function (wishId) {
+    const wishIndex = this.wishes.findIndex((w) => w.id === wishId);
+    if (wishIndex >= 0) {
+      // delete from DB
+      const response = await this.dbClient
+        .from("wishes")
+        .delete()
+        .eq("id", wishId);
+
+      if (response.error) {
+        console.error("[deleteWish] ", response.error);
+      } else {
+        // delete from local db
+        this.wishes.splice(wishIndex, 1);
+        this.renderWishes();
+      }
+    }
   },
   renderWishes: async function () {
     const title = document.getElementById("eventTitle");
