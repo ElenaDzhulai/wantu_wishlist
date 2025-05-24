@@ -44,6 +44,19 @@ export const AppWantu = {
       this.events.find((ev) => ev.id === event.id).title = event.title;
     }
   },
+  async saveWishToDB(wish) {
+    const { error } = await this.dbClient
+      .from("wishes")
+      .update({ title: wish.title, link: wish.link })
+      .eq("id", wish.id);
+
+    if (error) {
+      console.error("[saveWishToDB] ", error);
+    } else {
+      this.wishes.find((w) => w.id === wish.id).title = wish.title;
+      this.wishes.find((w) => w.id === wish.id).link = wish.link;
+    }
+  },
   // NOTE: deprecated
   saveToStorage: function () {
     localStorage.setItem("wishEvents", JSON.stringify(this.events));
@@ -65,7 +78,6 @@ export const AppWantu = {
       const span = document.createElement("span");
       span.textContent = event.title;
       liElement.className = event.id === this.currentEvent ? "active" : "";
-      liElement.setAttribute("data-eventid", event.id);
       liElement.setAttribute("data-eventid", event.id);
       eventWithControls.onclick = (e) => {
         if (
@@ -239,11 +251,13 @@ export const AppWantu = {
       this.renderWishes();
     }
   },
-  editWishForm: function (container, wish, index) {
+  editWishForm: function (li, wishId) {
     let inputTitle = document.createElement("input");
     inputTitle.placeholder = "Title";
     let inputLink = document.createElement("input");
     inputLink.placeholder = "Link";
+
+    const wish = this.wishes.find((w) => w.id === wishId);
 
     if (wish.title) {
       inputTitle.value = wish.title;
@@ -255,33 +269,31 @@ export const AppWantu = {
 
     const saveButton = document.createElement("button");
     saveButton.textContent = "Save";
-    saveButton.onclick = () => this.saveWish(index);
+    saveButton.onclick = () => this.saveWish(wish);
 
-    container.appendChild(inputTitle);
-    container.appendChild(inputLink);
-    container.appendChild(saveButton);
+    li.appendChild(inputTitle);
+    li.appendChild(inputLink);
+    li.appendChild(saveButton);
   },
-  saveWish: function (index) {
+  saveWish: async function (wish) {
     const list = document.getElementById("wishList");
-    const li = list.querySelectorAll("li")[index];
+    const li = list.querySelector(`[data-wishid="${wish.id}"]`);
     const inputs = li.querySelectorAll("input");
     const title = inputs[1].value;
     const link = inputs[2].value;
-    const wish = this.events[this.currentEvent][index];
     wish.title = title;
     wish.link = link;
-    this.saveToStorage();
+    await this.saveWishToDB(wish);
     this.renderWishes();
   },
-  editWish: function (index) {
+  editWish: function (wishId) {
     const list = document.getElementById("wishList");
-    const li = list.querySelectorAll("li")[index];
+    const li = list.querySelector(`[data-wishid="${wishId}"]`);
     const wishLabel = li.querySelector(".wishLabel");
     const itemButtons = li.querySelector(".itemButtons");
     wishLabel.style.display = "none";
     itemButtons.style.display = "none";
-    const wish = this.events[this.currentEvent][index];
-    this.editWishForm(li, wish, index);
+    this.editWishForm(li, wishId);
   },
   deleteWish: function (index) {
     this.events[this.currentEvent].splice(index, 1);
@@ -356,12 +368,12 @@ export const AppWantu = {
 
       const editButton = this.createIconButton(
         "edit",
-        () => this.editWish(i),
+        () => this.editWish(wish.id),
         "Edit",
       );
       const deleteButton = this.createIconButton(
         "delete",
-        () => this.deleteWish(i),
+        () => this.deleteWish(wish.id),
         "Delete",
       );
 
