@@ -73,6 +73,27 @@ export const AppWantu = {
       .select();
     return response;
   },
+  async wishStatusToDB(isDone, wishId) {
+    const response = await this.dbClient
+      .from("wishes")
+      .update({ done: isDone })
+      .eq("id", wishId);
+    return response;
+  },
+  async deleteWishFromDB(wishId) {
+    const response = await this.dbClient
+      .from("wishes")
+      .delete()
+      .eq("id", wishId);
+    return response;
+  },
+  async getWishesFromDB() {
+    const response = await this.dbClient
+      .from("wishes")
+      .select("*")
+      .eq("event_id", this.currentEventId);
+    return response;
+  },
   renderEvents: function () {
     const list = document.getElementById("eventList");
     list.innerHTML = "";
@@ -283,16 +304,14 @@ export const AppWantu = {
   },
   toggleWish: async function (wishId) {
     const wish = this.wishes.find((w) => w.id === wishId);
-    wish.done = !wish.done;
+    const newStatus = !wish.done;
 
-    const { error } = await this.dbClient
-      .from("wishes")
-      .update({ done: wish.done })
-      .eq("id", wishId);
+    const { error } = await this.wishStatusToDB(newStatus, wishId);
 
     if (error) {
       console.error(`[toggleWish] ${error}`);
     } else {
+      wish.done = newStatus;
       this.renderWishes();
     }
   },
@@ -355,14 +374,10 @@ export const AppWantu = {
   deleteWish: async function (wishId) {
     const wishIndex = this.wishes.findIndex((w) => w.id === wishId);
     if (wishIndex >= 0) {
-      // delete from DB
-      const response = await this.dbClient
-        .from("wishes")
-        .delete()
-        .eq("id", wishId);
+      const { error } = await this.deleteWishFromDB(wishId);
 
-      if (response.error) {
-        console.error("[deleteWish] ", response.error);
+      if (error) {
+        console.error("[deleteWish] ", error);
       } else {
         // delete from local db
         this.wishes.splice(wishIndex, 1);
@@ -385,10 +400,7 @@ export const AppWantu = {
     document.querySelector(".wishes_controls").style.display = "flex";
     document.querySelector(".savePDF").style.display = "flex";
 
-    const { data, error } = await this.dbClient
-      .from("wishes")
-      .select("*")
-      .eq("event_id", this.currentEventId);
+    const { data, error } = await this.getWishesFromDB();
 
     if (error) {
       console.error("[renderWishes] ", error);
@@ -477,23 +489,23 @@ export const AppWantu = {
     };
     return button;
   },
-  saveToPDF: async function () {
+  saveToPDF: function () {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
+    const eventTitle = this.events.filter(
+      (event) => event.id === this.currentEventId
+    )[0].title;
 
     doc.setFontSize(14);
-    doc.text(`My Wish List: ${this.currentEventId}`, 10, 10);
+    doc.text(eventTitle, 10, 10);
 
     let y = 20;
-    if (
-      !this.events[this.currentEventId] ||
-      this.events[this.currentEventId].length === 0
-    ) {
+    if (!this.wishes) {
       alert("This event has no wishes to export.");
       return;
     }
 
-    this.events[this.currentEventId].forEach((wish, index) => {
+    this.wishes.forEach((wish, index) => {
       let text = `${index + 1}. ${wish.title}`;
       if (wish.link) text += ` (${wish.link})`;
 
@@ -510,6 +522,6 @@ export const AppWantu = {
       y += 10;
     });
 
-    doc.save(`${this.currentEventId}_wish_list.pdf`);
+    doc.save(`${eventTitle}.pdf`);
   },
 };

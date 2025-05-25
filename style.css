@@ -137,7 +137,7 @@ ul {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 24px 8px 8px;
+  padding: 8px 24px;
   cursor: pointer;
   border-radius: 4px;
   color: #fff;
@@ -213,7 +213,7 @@ main li {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24px 0 24px 0;
+  padding: 16px 0 16px 0;
   gap: 8px;
 }
 
