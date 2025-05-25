@@ -419,7 +419,10 @@ export const AppWantu = {
     )[0].title;
     list.innerHTML = "";
 
-    this.wishes.forEach((wish) => {
+    const sortedWishes = this.wishes.sort(
+      (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)
+    );
+    sortedWishes.forEach((wish) => {
       const li = document.createElement("li");
       li.setAttribute("data-wishid", wish.id);
 
