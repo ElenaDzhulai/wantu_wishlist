@@ -388,13 +388,18 @@ export const AppWantu = {
   renderWishes: async function () {
     const title = document.getElementById("eventTitle");
     const list = document.getElementById("wishList");
+    const eventTitleContainer = document.getElementById("wishListData");
 
     if (!this.currentEventId) {
+      eventTitleContainer.classList.add("no-event-selected");
       list.style.display = "none";
-      title.textContent = "Select an event";
+
+      title.innerHTML = `<img src="img/img_select_event.svg">You need to select an event.`;
       document.querySelector(".wishes_controls").style.display = "none";
       document.querySelector(".savePDF").style.display = "none";
       return;
+    } else {
+      eventTitleContainer.classList.remove("no-event-selected");
     }
 
     document.querySelector(".wishes_controls").style.display = "flex";

@@ -221,6 +221,16 @@ main li:not(:last-child) {
   border-bottom: 1px dashed #ecdec7;
 }
 
+.no-event-selected {
+  justify-content: center !important;
+}
+
+.no-event-selected h3 {
+  flex-grow: 1;
+  max-width: 280px;
+  text-align: center;
+}
+
 .wishes_controls {
   display: flex;
   align-items: center;
