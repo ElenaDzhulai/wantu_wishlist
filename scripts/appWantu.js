@@ -20,7 +20,7 @@ export const AppWantu = {
     document.getElementById("savePDF").onclick = this.saveToPDF.bind(this);
 
     this.renderEvents();
-    this.renderWishes();
+    this.showWishes();
   },
 
   async getAllFromDB(dbName) {
@@ -89,7 +89,7 @@ export const AppWantu = {
         ) {
           this.currentEventId = event.id;
           this.renderEvents();
-          this.renderWishes();
+          this.showWishes();
         }
       };
 
@@ -170,7 +170,7 @@ export const AppWantu = {
       this.currentEventId = createdEvent.id;
       this.events.push(createdEvent);
       this.renderEvents();
-      this.renderWishes();
+      this.showWishes();
       input.value = "";
     }
   },
@@ -190,7 +190,7 @@ export const AppWantu = {
         // delete from local db
         this.events.splice(eventIndex, 1);
         this.renderEvents();
-        this.renderWishes();
+        this.showWishes();
       }
       this.closeDeleteModal();
     }
@@ -242,7 +242,7 @@ export const AppWantu = {
 
     await this.saveToDB("events", newEvent);
     this.renderEvents();
-    this.renderWishes();
+    this.showWishes();
   },
   showDeleteModal: function () {
     document.getElementById("confirmModal").classList.remove("hidden");
@@ -275,7 +275,7 @@ export const AppWantu = {
     } else {
       const createdWish = data[0];
       this.wishes.push(createdWish);
-      this.renderWishes();
+      this.showWishes();
       titleInput.value = "";
       linkInput.value = "";
     }
@@ -290,7 +290,7 @@ export const AppWantu = {
       console.error(`[toggleWish] ${error}`);
     } else {
       wish.done = newStatus;
-      this.renderWishes();
+      this.showWishes();
     }
   },
   saveWish: async function (wish) {
@@ -302,7 +302,7 @@ export const AppWantu = {
     wish.title = title;
     wish.link = link;
     await this.saveToDB("wishes", wish);
-    this.renderWishes();
+    this.showWishes();
   },
   editWish: function (wishId) {
     const list = document.getElementById("wishList");
@@ -359,99 +359,25 @@ export const AppWantu = {
       } else {
         // delete from local db
         this.wishes.splice(wishIndex, 1);
-        this.renderWishes();
+        this.showWishes();
       }
     }
   },
-  renderWishes: async function () {
-    const title = document.getElementById("eventTitle");
-    const list = document.getElementById("wishList");
-    const eventTitleContainer = document.getElementById("wishListData");
-
-    if (!this.currentEventId) {
-      eventTitleContainer.classList.add("no-event-selected");
-      list.style.display = "none";
-
-      title.innerHTML = `<img src="img/img_select_event.svg">You need to select an event.`;
-      document.querySelector(".wishes_controls").style.display = "none";
-      document.querySelector(".savePDF").style.display = "none";
-      return;
-    } else {
-      eventTitleContainer.classList.remove("no-event-selected");
-    }
+  showWishes: async function () {
+    this.toggleViewWithoutSelectedEvent();
+    if (!this.currentEventId) return;
 
     document.querySelector(".wishes_controls").style.display = "flex";
     document.querySelector(".savePDF").style.display = "flex";
 
-    await this.getAllFromDB("wishes");
-
-    if (this.wishes.length) {
-      list.style.display = "block";
-    } else {
-      list.style.display = "none";
-    }
-
+    // show selected event's name on top of the wishes list
+    const title = document.getElementById("eventTitle");
     title.textContent = this.events.filter(
       (event) => event.id === this.currentEventId,
     )[0].title;
-    list.innerHTML = "";
 
-    const sortedWishes = this.wishes.sort(
-      (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at),
-    );
-    sortedWishes.forEach((wish) => {
-      const li = document.createElement("li");
-      li.setAttribute("data-wishid", wish.id);
-
-      const container = document.createElement("div");
-      container.className = "wishLabel";
-
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = wish.done;
-      checkbox.classList.add("wish_checkbox");
-      checkbox.onchange = () => this.toggleWish(wish.id);
-      container.appendChild(checkbox);
-
-      const titleElement = document.createElement(wish.link ? "a" : "span");
-      titleElement.textContent = wish.title;
-      if (wish.link) {
-        titleElement.href = wish.link;
-        titleElement.target = "_blank";
-        titleElement.title = wish.link;
-      }
-      if (wish.done) titleElement.classList.add("done");
-
-      titleElement.onclick = () => {
-        wish.editTitle = true;
-        this.renderWishes();
-      };
-      container.appendChild(titleElement);
-
-      const editButton = this.createIconButton(
-        "edit",
-        () => this.editWish(wish.id),
-        "Edit",
-      );
-      const deleteButton = this.createIconButton(
-        "delete",
-        () => this.deleteWish(wish.id),
-        "Delete",
-      );
-
-      container.appendChild(editButton);
-      container.appendChild(deleteButton);
-
-      const buttonWrapper = document.createElement("div");
-      buttonWrapper.className = "itemButtons";
-
-      buttonWrapper.appendChild(editButton);
-      buttonWrapper.appendChild(deleteButton);
-
-      li.appendChild(container);
-      li.appendChild(buttonWrapper);
-      list.appendChild(li);
-    });
+    await this.getAllFromDB("wishes");
+    this.renderWishes();
   },
   createIconButton(iconText, onclick, title = "") {
     const button = document.createElement("button");
@@ -519,5 +445,94 @@ export const AppWantu = {
   },
   resourceNameToSingleton(dbName) {
     return dbName === "events" ? "Event" : "Wish";
+  },
+  toggleViewWithoutSelectedEvent() {
+    const title = document.getElementById("eventTitle");
+    const list = document.getElementById("wishList");
+    const eventTitleContainer = document.getElementById("wishListData");
+
+    if (this.currentEventId) {
+      eventTitleContainer.classList.remove("no-event-selected");
+      return;
+    }
+
+    eventTitleContainer.classList.add("no-event-selected");
+    list.style.display = "none";
+
+    title.innerHTML = `<img src="img/img_select_event.svg">You need to select an event.`;
+    document.querySelector(".wishes_controls").style.display = "none";
+    document.querySelector(".savePDF").style.display = "none";
+  },
+  renderWishes() {
+    const list = document.getElementById("wishList");
+    // if no wishes - hide white box
+    list.style.display = this.wishes.length ? "block" : "none";
+
+    const sortedWishes = this.wishes.sort(
+      (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at),
+    );
+
+    list.innerHTML = "";
+    sortedWishes.forEach((wish) => {
+      const li = document.createElement("li");
+      li.setAttribute("data-wishid", wish.id);
+
+      const container = document.createElement("div");
+      container.className = "wishLabel";
+
+      container.appendChild(this.createWishCheckbox(wish));
+      container.appendChild(this.createWishTitle(wish));
+
+      li.appendChild(container);
+      li.appendChild(this.createWishButtons(wish));
+
+      list.appendChild(li);
+    });
+  },
+  createWishCheckbox(wish) {
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = wish.done;
+    checkbox.classList.add("wish_checkbox");
+    checkbox.onchange = () => this.toggleWish(wish.id);
+
+    return checkbox;
+  },
+  createWishTitle(wish) {
+    const titleElement = document.createElement(wish.link ? "a" : "span");
+    titleElement.textContent = wish.title;
+    if (wish.link) {
+      titleElement.href = wish.link;
+      titleElement.target = "_blank";
+      titleElement.title = wish.link;
+    }
+    if (wish.done) titleElement.classList.add("done");
+
+    titleElement.onclick = () => {
+      wish.editTitle = true;
+      this.showWishes();
+    };
+
+    return titleElement;
+  },
+  createWishButtons(wish) {
+    const buttonWrapper = document.createElement("div");
+    buttonWrapper.className = "itemButtons";
+
+    const editButton = this.createIconButton(
+      "edit",
+      () => this.editWish(wish.id),
+      "Edit",
+    );
+    const deleteButton = this.createIconButton(
+      "delete",
+      () => this.deleteWish(wish.id),
+      "Delete",
+    );
+
+    buttonWrapper.appendChild(editButton);
+    buttonWrapper.appendChild(deleteButton);
+
+    return buttonWrapper;
   },
 };
