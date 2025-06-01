@@ -2,13 +2,13 @@ export const AppWantu = {
   events: [],
   wishes: [],
   currentEventId: null,
-  eventDelete: null,
+  eventIdToDelete: null,
   dbClient: null,
 
   init: async function (dbClient) {
     this.dbClient = dbClient;
 
-    await this.getEventsFromDB();
+    await this.getAllFromDB("events");
 
     this.prepareAddEventForm();
     this.prepareAddWishForm();
@@ -22,76 +22,46 @@ export const AppWantu = {
     this.renderEvents();
     this.renderWishes();
   },
-  async getEventsFromDB() {
-    // TODO: process errors
-    const { data, error } = await this.dbClient.from("events").select();
-    this.events = data;
-  },
-  async addEventToDB(eventTitle) {
-    const response = await this.dbClient
-      .from("events")
-      .insert({ title: eventTitle })
-      .select();
-    return response;
-  },
-  async saveEventToDB(event) {
-    const { error } = await this.dbClient
-      .from("events")
-      .update({ title: event.title })
-      .eq("id", event.id);
+
+  async getAllFromDB(dbName) {
+    const baseQuery = this.dbClient.from(dbName).select("*");
+    const query =
+      dbName === "events"
+        ? baseQuery
+        : baseQuery.eq("event_id", this.currentEventId);
+
+    const { data, error } = await query;
 
     if (error) {
-      console.error("[saveEventToDB] ", error);
-    } else {
-      this.events.find((ev) => ev.id === event.id).title = event.title;
+      console.error("[getAllFromDB]", dbName, error);
+      return;
     }
+    dbName === "events" ? (this.events = data) : (this.wishes = data);
   },
-  async saveWishToDB(wish) {
+  async addToDB(dbName, resource) {
+    return await this.dbClient.from(dbName).insert(resource).select();
+  },
+  async saveToDB(dbName, resource) {
     const { error } = await this.dbClient
-      .from("wishes")
-      .update({ title: wish.title, link: wish.link })
-      .eq("id", wish.id);
+      .from(dbName)
+      .update(resource)
+      .eq("id", resource.id);
 
     if (error) {
-      console.error("[saveWishToDB] ", error);
+      const resourceName = this.resourceNameToSingleton(dbName);
+      console.error(`[save${resourceName}ToDB] `, error);
     } else {
-      this.wishes.find((w) => w.id === wish.id).title = wish.title;
-      this.wishes.find((w) => w.id === wish.id).link = wish.link;
+      this.updateLocalResource(dbName, resource);
     }
   },
-  async deleteEventFromDB() {
-    const response = await this.dbClient
-      .from("events")
-      .delete()
-      .eq("id", this.eventDelete);
-    return response;
-  },
-  async addWishToDB(title, link) {
-    const response = await this.dbClient
-      .from("wishes")
-      .insert({ title, link, event_id: this.currentEventId })
-      .select();
-    return response;
+  async deleteFromDB(dbName, id) {
+    return await this.dbClient.from(dbName).delete().eq("id", id);
   },
   async wishStatusToDB(isDone, wishId) {
     const response = await this.dbClient
       .from("wishes")
       .update({ done: isDone })
       .eq("id", wishId);
-    return response;
-  },
-  async deleteWishFromDB(wishId) {
-    const response = await this.dbClient
-      .from("wishes")
-      .delete()
-      .eq("id", wishId);
-    return response;
-  },
-  async getWishesFromDB() {
-    const response = await this.dbClient
-      .from("wishes")
-      .select("*")
-      .eq("event_id", this.currentEventId);
     return response;
   },
   renderEvents: function () {
@@ -126,12 +96,15 @@ export const AppWantu = {
       const editButton = this.createIconButton(
         "edit",
         () => this.editEvent(event),
-        "Edit"
+        "Edit",
       );
       const deleteButton = this.createIconButton(
         "delete",
-        () => this.showDeleteModal(event),
-        "Delete"
+        () => {
+          this.eventIdToDelete = event.id;
+          this.showDeleteModal();
+        },
+        "Delete",
       );
 
       const buttonWrapper = document.createElement("div");
@@ -176,19 +149,19 @@ export const AppWantu = {
   },
   addEvent: async function () {
     const input = document.getElementById("newEventInput");
-    const eventTitle = input.value.trim();
+    const title = input.value.trim();
 
-    if (!eventTitle) {
+    if (!title) {
       alert("Enter an event title");
       return;
     }
 
-    if (this.events.some((event) => event.title === eventTitle)) {
-      alert(`Name "${eventTitle}" already in your events list.`);
+    if (this.events.some((event) => event.title === title)) {
+      alert(`Name "${title}" already in your events list.`);
       return;
     }
 
-    const { data, error } = await this.addEventToDB(eventTitle);
+    const { data, error } = await this.addToDB("events", { title });
 
     if (error) {
       console.error("[addEvent] ", error);
@@ -202,14 +175,16 @@ export const AppWantu = {
     }
   },
   deleteEvent: async function () {
-    const eventIndex = this.events.findIndex((e) => e.id === this.eventDelete);
-    if (this.eventDelete && eventIndex >= 0) {
-      const response = await this.deleteEventFromDB();
+    const eventIndex = this.events.findIndex(
+      (e) => e.id === this.eventIdToDelete,
+    );
+    if (this.eventIdToDelete && eventIndex >= 0) {
+      const response = await this.deleteFromDB("events", this.eventIdToDelete);
 
       if (response.error) {
         console.error("[deleteEvent] ", response.error);
       } else {
-        if (this.currentEventId === this.eventDelete) {
+        if (this.currentEventId === this.eventIdToDelete) {
           this.currentEventId = null;
         }
         // delete from local db
@@ -222,7 +197,7 @@ export const AppWantu = {
   },
   editEvent: function (event) {
     const eventContainer = document.querySelector(
-      `[data-eventid="${event.id}"]`
+      `[data-eventid="${event.id}"]`,
     );
     const eventForm = eventContainer.querySelector(".eventForm");
     const eventWithControls =
@@ -265,16 +240,15 @@ export const AppWantu = {
       return;
     }
 
-    await this.saveEventToDB(newEvent);
+    await this.saveToDB("events", newEvent);
     this.renderEvents();
     this.renderWishes();
   },
-  showDeleteModal: function (event) {
-    this.eventDelete = event.id;
+  showDeleteModal: function () {
     document.getElementById("confirmModal").classList.remove("hidden");
   },
   closeDeleteModal: function () {
-    this.eventDelete = null;
+    this.eventIdToDelete = null;
     document.getElementById("confirmModal").classList.add("hidden");
   },
   prepareAddWishForm: function () {
@@ -290,7 +264,11 @@ export const AppWantu = {
     const link = linkInput.value.trim();
     if (!title) return alert("Please, enter a wish title");
 
-    const { data, error } = await this.addWishToDB(title, link);
+    const { data, error } = await this.addToDB("wishes", {
+      title,
+      link,
+      event_id: this.currentEventId,
+    });
 
     if (error) {
       console.error("[addWish] ", error);
@@ -323,7 +301,7 @@ export const AppWantu = {
     const link = inputs[2].value;
     wish.title = title;
     wish.link = link;
-    await this.saveWishToDB(wish);
+    await this.saveToDB("wishes", wish);
     this.renderWishes();
   },
   editWish: function (wishId) {
@@ -374,7 +352,7 @@ export const AppWantu = {
   deleteWish: async function (wishId) {
     const wishIndex = this.wishes.findIndex((w) => w.id === wishId);
     if (wishIndex >= 0) {
-      const { error } = await this.deleteWishFromDB(wishId);
+      const { error } = await this.deleteFromDB("wishes", wishId);
 
       if (error) {
         console.error("[deleteWish] ", error);
@@ -405,13 +383,7 @@ export const AppWantu = {
     document.querySelector(".wishes_controls").style.display = "flex";
     document.querySelector(".savePDF").style.display = "flex";
 
-    const { data, error } = await this.getWishesFromDB();
-
-    if (error) {
-      console.error("[renderWishes] ", error);
-    }
-
-    this.wishes = data;
+    await this.getAllFromDB("wishes");
 
     if (this.wishes.length) {
       list.style.display = "block";
@@ -420,12 +392,12 @@ export const AppWantu = {
     }
 
     title.textContent = this.events.filter(
-      (event) => event.id === this.currentEventId
+      (event) => event.id === this.currentEventId,
     )[0].title;
     list.innerHTML = "";
 
     const sortedWishes = this.wishes.sort(
-      (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)
+      (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at),
     );
     sortedWishes.forEach((wish) => {
       const li = document.createElement("li");
@@ -459,12 +431,12 @@ export const AppWantu = {
       const editButton = this.createIconButton(
         "edit",
         () => this.editWish(wish.id),
-        "Edit"
+        "Edit",
       );
       const deleteButton = this.createIconButton(
         "delete",
         () => this.deleteWish(wish.id),
-        "Delete"
+        "Delete",
       );
 
       container.appendChild(editButton);
@@ -501,7 +473,7 @@ export const AppWantu = {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const eventTitle = this.events.filter(
-      (event) => event.id === this.currentEventId
+      (event) => event.id === this.currentEventId,
     )[0].title;
 
     doc.setFontSize(14);
@@ -531,5 +503,21 @@ export const AppWantu = {
     });
 
     doc.save(`${eventTitle}.pdf`);
+  },
+  updateLocalResource(resourceType, resource) {
+    switch (resourceType) {
+      case "events":
+        this.events.find((ev) => ev.id === resource.id).title = resource.title;
+        return;
+      case "wishes":
+        this.wishes.find((w) => w.id === resource.id).title = resource.title;
+        this.wishes.find((w) => w.id === resource.id).link = resource.link;
+        return;
+      default:
+        return;
+    }
+  },
+  resourceNameToSingleton(dbName) {
+    return dbName === "events" ? "Event" : "Wish";
   },
 };
