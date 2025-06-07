@@ -99,11 +99,13 @@ ul {
 
 
 .sidebar {
+  position: relative;
   width: 320px;
   min-height: 100vh;
   background: #12495C;
   padding: 24px 0;
   padding-left: 0;
+  padding-bottom: 48px;
   box-sizing: border-box;
   border-right: 1px solid #ddd;
 }
@@ -188,10 +190,52 @@ ul {
 }
 
 .eventForm {
-  padding: 3px 24px 2px 0;
+  padding: 8px 24px 8px 0;
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.eventForm input {
+  padding-left: 24px;
+}
+
+.languageSwitcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+}
+
+.tab {
+  height: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 16px;
+  color: #faf8f6;
+  font-weight: 400;
+  outline: none;
+  transition: color 0.3s;
+  cursor: pointer;
+}
+
+.tab:hover,
+.tab.active {
+  background: none;
+  border: none;
+  color: #f07a3d;
+}
+
+.separator {
+  display: inline-block;
+  width: 2px;
+  height: 24px;
+  background-color: #ccc;
+  margin: 0 6px;
 }
 
 main {

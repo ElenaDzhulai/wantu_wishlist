@@ -28,6 +28,7 @@ export const AppWantu = {
     this.renderEvents();
     this.showWishes();
     this.updateAllTranslations();
+    this.highlightActiveLocale();
   },
 
   async getAllFromDB(dbName) {
@@ -473,14 +474,17 @@ export const AppWantu = {
 
   // i18n
   bindLocationChange() {
-    const locationSelect = document.getElementById("languageSwitcher");
+    const locationContainer = document.getElementById("languageSwitcher");
 
-    locationSelect.addEventListener("change", () => {
-      this.setLocaleToLocalStorage(locationSelect.value);
-      this.updateAllTranslations();
+    locationContainer.addEventListener("click", (event) => {
+      if (event.target.tagName === "BUTTON") {
+        this.setLocaleToLocalStorage(event.target.getAttribute("data-lang"));
+        this.highlightActiveLocale();
+        this.updateAllTranslations();
+      }
     });
 
-    locationSelect.value = this.getLocale();
+    locationContainer.value = this.getLocale();
   },
   getLocale() {
     return window.localStorage.getItem("locale") || this.DEFAULT_LOCALE;
@@ -499,6 +503,19 @@ export const AppWantu = {
     }
 
     return langStr;
+  },
+  highlightActiveLocale() {
+    const activeLocale = this.getLocale();
+    const locationButtons = document
+      .getElementById("languageSwitcher")
+      .getElementsByTagName("button");
+
+    for (const btn of locationButtons) {
+      btn.classList.remove("active");
+      if (btn.getAttribute("data-lang") === activeLocale) {
+        btn.classList.add("active");
+      }
+    }
   },
   updateAllTranslations() {
     const allElements = document.querySelectorAll("[data-locale-key]");
