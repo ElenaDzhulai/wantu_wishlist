@@ -166,7 +166,7 @@ export const AppWantu = {
     }
 
     if (this.events.some((event) => event.title === title)) {
-      alert(`Name "${title}" already in your events list.`);
+      alert(this.$("alertSaveEvent", { title }));
       return;
     }
 
@@ -257,7 +257,7 @@ export const AppWantu = {
 
     // check if event with the same name already exists
     if (this.events.some((event) => event.title === newEvent.title)) {
-      alert(this.$t("alertSaveEvent", { eventTitle: newEvent.title }));
+      alert(this.$t("alertSaveEvent", { event: newEvent.title }));
       return;
     }
 
@@ -320,6 +320,16 @@ export const AppWantu = {
     const inputs = li.querySelectorAll("input");
     const title = inputs[1].value;
     const link = inputs[2].value;
+
+    if (!title) {
+      inputs[1].classList.add("shake");
+      inputs[1].focus();
+      setTimeout(() => {
+        inputs[1].classList.remove("shake");
+      }, 300);
+      return;
+    }
+
     wish.title = title;
     wish.link = link;
     await this.saveToDB("wishes", wish);
