@@ -45,7 +45,7 @@ h1 {
 }
 
 h2 {
-  color: #faf8f6;
+  color: #A4CED6;
 }
 
 h3 {
@@ -216,8 +216,7 @@ ul {
   border: none;
   cursor: pointer;
   padding: 16px;
-  color: #faf8f6;
-  font-weight: 400;
+  color: #A4CED6;
   outline: none;
   transition: color 0.3s;
   cursor: pointer;
@@ -234,7 +233,7 @@ ul {
   display: inline-block;
   width: 2px;
   height: 24px;
-  background-color: #ccc;
+  background-color: #2D6C7A;
   margin: 0 6px;
 }
 
