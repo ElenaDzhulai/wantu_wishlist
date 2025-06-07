@@ -36,14 +36,19 @@
         <div id="hamburger">&#9776;</div>
 
         <div id="sideMenu">
-          <h2>Events</h2>
+          <h2 data-locale-key="events"></h2>
           <ul id="eventList"></ul>
         </div>
+        <select id="languageSwitcher">
+          <option value="en">English</option>
+          <option value="ru">Русский</option>
+          <option value="pl">Polski</option>
+        </select>
       </aside>
 
       <!-- Wish list -->
       <main>
-        <h1>Wish List</h1>
+        <h1 data-locale-key="wishList">Wish List</h1>
 
         <div class="wishListData" id="wishListData">
           <h3 id="eventTitle"></h3>
@@ -51,7 +56,7 @@
           <!-- Save pdf button  -->
           <button id="savePDF" class="savePDF">
             <span class="material-icons">download</span>
-            Save to PDF
+            <span data-locale-key="saveToPDF">Save to PDF</span>
           </button>
         </div>
 

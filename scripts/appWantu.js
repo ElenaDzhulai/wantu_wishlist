@@ -1,11 +1,17 @@
+import { translations } from "./lang.js";
+
 export const AppWantu = {
+  DEFAULT_LOCALE: "en",
+
   events: [],
   wishes: [],
   currentEventId: null,
   eventIdToDelete: null,
   dbClient: null,
+  translations: translations,
 
   init: async function (dbClient) {
+    this.bindLocationChange();
     this.dbClient = dbClient;
 
     await this.getAllFromDB("events");
@@ -21,6 +27,7 @@ export const AppWantu = {
 
     this.renderEvents();
     this.showWishes();
+    this.updateAllTranslations();
   },
 
   async getAllFromDB(dbName) {
@@ -96,7 +103,7 @@ export const AppWantu = {
       const editButton = this.createIconButton(
         "edit",
         () => this.editEvent(event),
-        "Edit",
+        "Edit"
       );
       const deleteButton = this.createIconButton(
         "delete",
@@ -104,7 +111,7 @@ export const AppWantu = {
           this.eventIdToDelete = event.id;
           this.showDeleteModal();
         },
-        "Delete",
+        "Delete"
       );
 
       const buttonWrapper = document.createElement("div");
@@ -129,10 +136,12 @@ export const AppWantu = {
     input.id = "newEventInput";
     input.type = "text";
     input.placeholder = "Create an event";
+    input.setAttribute("data-locale-key", "newEventPlaceholder");
 
     const button = document.createElement("button");
     button.id = "addEvent";
-    button.innerText = "Add";
+    button.setAttribute("data-locale-key", "addEventButton");
+    button.innerText = this.$t("addEventButton");
 
     sidebarEventForm.appendChild(input);
     sidebarEventForm.appendChild(button);
@@ -170,13 +179,14 @@ export const AppWantu = {
       this.currentEventId = createdEvent.id;
       this.events.push(createdEvent);
       this.renderEvents();
+      this.renderWishes();
       this.showWishes();
       input.value = "";
     }
   },
   deleteEvent: async function () {
     const eventIndex = this.events.findIndex(
-      (e) => e.id === this.eventIdToDelete,
+      (e) => e.id === this.eventIdToDelete
     );
     if (this.eventIdToDelete && eventIndex >= 0) {
       const response = await this.deleteFromDB("events", this.eventIdToDelete);
@@ -197,14 +207,15 @@ export const AppWantu = {
   },
   editEvent: function (event) {
     const eventContainer = document.querySelector(
-      `[data-eventid="${event.id}"]`,
+      `[data-eventid="${event.id}"]`
     );
     const eventForm = eventContainer.querySelector(".eventForm");
     const eventWithControls =
       eventForm.parentElement.querySelector(".eventWithControls");
 
     let inputElement = document.createElement("input");
-    inputElement.placeholder = "Event name";
+    inputElement.placeholder = this.$t("inputEditEvent");
+    inputElement.setAttribute("data-locale-key", "inputEditEvent");
     inputElement.value = event.title;
 
     const saveButton = document.createElement("button");
@@ -218,6 +229,16 @@ export const AppWantu = {
       e.stopPropagation();
       const newEventTitle =
         saveButton.parentElement.querySelector("input").value;
+
+      if (!newEventTitle) {
+        inputElement.classList.add("shake");
+        inputElement.focus();
+        setTimeout(() => {
+          inputElement.classList.remove("shake");
+        }, 300);
+        return;
+      }
+
       const newEvent = { ...event, title: newEventTitle };
       this.saveEvent(event, newEvent);
     };
@@ -236,7 +257,7 @@ export const AppWantu = {
 
     // check if event with the same name already exists
     if (this.events.some((event) => event.title === newEvent.title)) {
-      alert(`Name "${newEvent.title}" already in your events list.`);
+      alert(this.$t("alertSaveEvent", { eventTitle: newEvent.title }));
       return;
     }
 
@@ -262,7 +283,7 @@ export const AppWantu = {
 
     const title = titleInput.value.trim();
     const link = linkInput.value.trim();
-    if (!title) return alert("Please, enter a wish title");
+    if (!title) return alert(this.$t("alertEmptyWish"));
 
     const { data, error } = await this.addToDB("wishes", {
       title,
@@ -319,17 +340,21 @@ export const AppWantu = {
   },
   createWishForm: function (container, wish) {
     let inputTitle = document.createElement("input");
-    inputTitle.placeholder = "Title";
+    inputTitle.placeholder = this.$t("wishTitleInputPlaceholder");
+    inputTitle.setAttribute("data-locale-key", "wishTitleInputPlaceholder");
     inputTitle.type = "text";
     inputTitle.setAttribute("data-form_el", "title");
 
     let inputLink = document.createElement("input");
-    inputLink.placeholder = "Link";
+    inputLink.placeholder = this.$t("wishLinkInputPlaceholder");
+    inputLink.setAttribute("data-locale-key", "wishLinkInputPlaceholder");
     inputLink.type = "text";
     inputLink.setAttribute("data-form_el", "link");
 
     const saveButton = document.createElement("button");
-    saveButton.textContent = wish ? "Save" : "Add Wish";
+    const saveButtonLocaleKey = wish ? "saveWishButton" : "addWishButton";
+    saveButton.textContent = this.$t(saveButtonLocaleKey);
+    saveButton.setAttribute("data-locale-key", saveButtonLocaleKey);
 
     if (wish?.title) {
       inputTitle.value = wish.title;
@@ -373,7 +398,7 @@ export const AppWantu = {
     // show selected event's name on top of the wishes list
     const title = document.getElementById("eventTitle");
     title.textContent = this.events.filter(
-      (event) => event.id === this.currentEventId,
+      (event) => event.id === this.currentEventId
     )[0].title;
 
     await this.getAllFromDB("wishes");
@@ -396,20 +421,21 @@ export const AppWantu = {
     return button;
   },
   saveToPDF: function () {
+    if (!this.wishes.length) {
+      alert(this.$t("alertSaveToPDF"));
+      return;
+    }
+
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     const eventTitle = this.events.filter(
-      (event) => event.id === this.currentEventId,
+      (event) => event.id === this.currentEventId
     )[0].title;
 
     doc.setFontSize(14);
     doc.text(eventTitle, 10, 10);
 
     let y = 20;
-    if (!this.wishes) {
-      alert("This event has no wishes to export.");
-      return;
-    }
 
     this.wishes.forEach((wish, index) => {
       let text = `${index + 1}. ${wish.title}`;
@@ -430,6 +456,51 @@ export const AppWantu = {
 
     doc.save(`${eventTitle}.pdf`);
   },
+
+  // i18n
+  bindLocationChange() {
+    const locationSelect = document.getElementById("languageSwitcher");
+
+    locationSelect.addEventListener("change", () => {
+      this.setLocaleToLocalStorage(locationSelect.value);
+      this.updateAllTranslations();
+    });
+
+    locationSelect.value = this.getLocale();
+  },
+  getLocale() {
+    return window.localStorage.getItem("locale") || this.DEFAULT_LOCALE;
+  },
+  setLocaleToLocalStorage(localeKey) {
+    window.localStorage.setItem("locale", localeKey);
+  },
+  $t(key, varsObj) {
+    let langStr = this.translations[this.getLocale()][key];
+    if (varsObj) {
+      for (let key in varsObj) {
+        const translationByKey = varsObj[key];
+        const keyStr = `$${key}`;
+        langStr = langStr.replace(keyStr, translationByKey);
+      }
+    }
+
+    return langStr;
+  },
+  updateAllTranslations() {
+    const allElements = document.querySelectorAll("[data-locale-key]");
+
+    for (const el of allElements) {
+      const translationKey = el.getAttribute("data-locale-key");
+      const translationText = this.$t(translationKey);
+
+      if (el.tagName === "INPUT") {
+        el.placeholder = translationText;
+      } else {
+        el.innerText = translationText;
+      }
+    }
+  },
+
   updateLocalResource(resourceType, resource) {
     switch (resourceType) {
       case "events":
@@ -459,7 +530,9 @@ export const AppWantu = {
     eventTitleContainer.classList.add("no-event-selected");
     list.style.display = "none";
 
-    title.innerHTML = `<img src="img/img_select_event.svg">You need to select an event.`;
+    title.innerHTML = `<img src="img/img_select_event.svg"> ${this.$t(
+      "renderWishesTitle"
+    )}`;
     document.querySelector(".wishes_controls").style.display = "none";
     document.querySelector(".savePDF").style.display = "none";
   },
@@ -469,7 +542,7 @@ export const AppWantu = {
     list.style.display = this.wishes.length ? "block" : "none";
 
     const sortedWishes = this.wishes.sort(
-      (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at),
+      (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)
     );
 
     list.innerHTML = "";
@@ -522,12 +595,12 @@ export const AppWantu = {
     const editButton = this.createIconButton(
       "edit",
       () => this.editWish(wish.id),
-      "Edit",
+      "Edit"
     );
     const deleteButton = this.createIconButton(
       "delete",
       () => this.deleteWish(wish.id),
-      "Delete",
+      "Delete"
     );
 
     buttonWrapper.appendChild(editButton);
