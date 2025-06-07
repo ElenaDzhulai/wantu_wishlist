@@ -161,12 +161,16 @@ export const AppWantu = {
     const title = input.value.trim();
 
     if (!title) {
-      alert("Enter an event title");
+      input.classList.add("shake");
+      input.focus();
+      setTimeout(() => {
+        input.classList.remove("shake");
+      }, 300);
       return;
     }
 
     if (this.events.some((event) => event.title === title)) {
-      alert(this.$("alertSaveEvent", { title }));
+      alert(this.$t("alertSaveEvent", { title }));
       return;
     }
 
