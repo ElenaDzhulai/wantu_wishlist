@@ -1,4 +1,4 @@
-import { translations } from "./lang.js";
+import { translations, locales } from "./lang.js";
 
 export const AppWantu = {
   DEFAULT_LOCALE: "en",
@@ -11,12 +11,12 @@ export const AppWantu = {
   translations: translations,
 
   init: async function (dbClient) {
-    this.bindLocationChange();
     this.dbClient = dbClient;
 
     await this.getAllFromDB("events");
 
     this.prepareAddEventForm();
+    this.initI18n();
     this.prepareAddWishForm();
 
     document.getElementById("confirmDelete").onclick =
@@ -28,7 +28,6 @@ export const AppWantu = {
     this.renderEvents();
     this.showWishes();
     this.updateAllTranslations();
-    this.highlightActiveLocale();
   },
 
   async getAllFromDB(dbName) {
@@ -473,6 +472,38 @@ export const AppWantu = {
   },
 
   // i18n
+  initI18n() {
+    this.addLocaleControls();
+    this.bindLocationChange();
+    this.highlightActiveLocale();
+  },
+  addLocaleControls() {
+    const sideMenu = document.getElementById("sideMenu");
+    const languageSwitcher = document.createElement("div");
+
+    languageSwitcher.className = "languageSwitcher";
+    languageSwitcher.id = "languageSwitcher";
+
+    const localeEntries = Object.entries(locales);
+
+    localeEntries.forEach(([localeKey, localeValue], index) => {
+      const button = document.createElement("button");
+      button.className = "tab";
+      button.setAttribute("data-lang", localeKey);
+      button.innerText = localeValue;
+
+      const span = document.createElement("span");
+      span.className = "separator";
+
+      languageSwitcher.appendChild(button);
+
+      // add separator only between buttons
+      if (index !== localeEntries.length - 1) {
+        languageSwitcher.appendChild(span);
+      }
+    });
+    sideMenu.appendChild(languageSwitcher);
+  },
   bindLocationChange() {
     const locationContainer = document.getElementById("languageSwitcher");
 

@@ -36,7 +36,7 @@ export const translations = {
   pl: {
     events: "Wydarzenia",
     wishList: "Lista życzeń",
-    newEventPlaceholder: "Dodaj nowe wydarzenie",
+    newEventPlaceholder: "Nowe wydarzenie",
     addEventButton: "Dodaj",
     alertEmptyEvent: "Wpisz nazwę wydarzenia",
     inputEditEvent: "Nazwa wydarzenia",
@@ -50,4 +50,10 @@ export const translations = {
     alertSaveToPDF: "To wydarzenie nie zawiera żadnych życzeń do eksportu",
     saveToPDF: "Zapisz do PDF",
   },
+};
+
+export const locales = {
+  en: "En",
+  pl: "Pl",
+  ru: "Ru",
 };

@@ -105,7 +105,7 @@ ul {
   background: #12495C;
   padding: 24px 0;
   padding-left: 0;
-  padding-bottom: 48px;
+  padding-bottom: 24px;
   box-sizing: border-box;
   border-right: 1px solid #ddd;
 }
@@ -532,6 +532,10 @@ button i.material-icons {
 
   .sidebarEventForm {
     padding-bottom: 24px;
+  }
+
+  .languageSwitcher {
+    position: static;
   }
 
   main {
