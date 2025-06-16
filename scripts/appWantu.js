@@ -1,4 +1,10 @@
+// 1.Оформить регистрацию auth.js
+// 2. Убрать кнопку sign up
+// 3. Сделать так чтобы события были привязаны к пользователю.
+// 4. Перевод для auth
+
 import { translations, locales } from "./lang.js";
+import { authModule } from "./auth.js";
 
 export const AppWantu = {
   DEFAULT_LOCALE: "en",
@@ -9,11 +15,14 @@ export const AppWantu = {
   eventIdToDelete: null,
   dbClient: null,
   translations: translations,
+  authModule: authModule,
 
   init: async function (dbClient) {
     this.dbClient = dbClient;
 
     await this.getAllFromDB("events");
+
+    this.authModule.addSignUpFormAndControls();
 
     this.prepareAddEventForm();
     this.initI18n();
@@ -562,7 +571,6 @@ export const AppWantu = {
       }
     }
   },
-
   updateLocalResource(resourceType, resource) {
     switch (resourceType) {
       case "events":
